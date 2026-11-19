@@ -1,0 +1,11 @@
+COOKIE="PHPSESSID=odh776js0ppghfj0ct71s2jlsf"
+BASE_EPOCH=$(date -d "2026-11-19 08:18:19 UTC" +%s)
+for tz_offset in 0 25200 -25200 28800; do
+  for delta in -3 -2 -1 0 1 2 3; do
+    ts=$(( BASE_EPOCH + tz_offset + delta ))
+    fname=$(date -u -d "@$ts" +%Y_%m_%d_%H_%M_%S)
+    url="http://192.168.22.80/BitBlog/assets/images/posts/${fname}.png"
+    code=$(curl -s -o /dev/null -w "%{http_code}" -b "$COOKIE" "$url")
+    echo "$code  $url"
+  done
+done
